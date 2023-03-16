@@ -80,13 +80,13 @@ impl FromStr for RomanNumeral {
 
         // last character always has its value added
         let last = char_to_value(s.chars().next_back().ok_or("empty string")?)?;
-        Ok(RomanNumeral { value: res + last })
+        Ok(RomanNumeral::with_value(res + last))
     }
 }
 
 impl ToString for RomanNumeral {
     fn to_string(&self) -> String {
-        let mut result = String::with_capacity(self.value as usize / 1000);
+        let mut result = String::with_capacity(self.value as usize / 500 + 1);
         let mut val = self.value;
 
         while val > 0 {
