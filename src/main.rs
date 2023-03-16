@@ -1,12 +1,23 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use itertools::Itertools;
 
 #[derive(Debug)]
 pub enum RomanNumeralError {
-    InvalidChar,
-    InvalidValue,
-    MiscError,
+    InvalidChar(char),
+    MiscError(String),
+}
+
+impl Display for RomanNumeralError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl From<&str> for RomanNumeralError {
+    fn from(s: &str) -> Self {
+        RomanNumeralError::MiscError(s.to_string())
+    }
 }
 
 #[derive(Debug, Default)]
@@ -23,7 +34,7 @@ fn char_to_value(c: char) -> Result<i64, RomanNumeralError> {
         'x' => Ok(10),
         'v' => Ok(5),
         'i' => Ok(1),
-        _ => Err(RomanNumeralError::InvalidChar),
+        _ => Err(RomanNumeralError::InvalidChar(c)),
     }
 }
 
@@ -98,13 +109,6 @@ impl ToString for RomanNumeral {
         result
     }
 }
-
-impl From<&str> for RomanNumeralError {
-    fn from(_: &str) -> Self {
-        RomanNumeralError::MiscError
-    }
-}
-
 fn getline() -> String {
     let mut buf = String::new();
     let _ = std::io::stdin().read_line(&mut buf);
@@ -113,7 +117,9 @@ fn getline() -> String {
 
 fn main() {
     loop {
-        let r = RomanNumeral::from_str(getline().trim());
+        let inp_str = getline();
+        let r = RomanNumeral::from_str(inp_str.trim());
+        println!("input: {:?}", inp_str.trim());
         if let Ok(i) = r {
             println!("value: {:?}", i.to_int());
             println!("converted back: {:?}", i.to_string());
