@@ -25,22 +25,6 @@ fn parse_roman_numeral_char(c: char) -> Result<i64, RomanNumeralError> {
     }
 }
 
-fn fast_sum(slice: &[i64]) -> i64 {
-    const CHUNK_SIZE: usize = 32;
-    let chunks = slice.chunks_exact(CHUNK_SIZE);
-    let remainder = chunks.remainder();
-
-    let sum_chunks = chunks.fold([0; CHUNK_SIZE], |mut ac, c| {
-        let c: [i64; CHUNK_SIZE] = unsafe { c.try_into().unwrap_unchecked() };
-        for i in 0..CHUNK_SIZE {
-            ac[i] += c[i];
-        }
-        ac
-    });
-
-    sum_chunks.iter().sum::<i64>() + remainder.iter().sum::<i64>()
-}
-
 fn parse_roman_numeral(s: &str) -> Result<i64, RomanNumeralError> {
     assert!(s.is_ascii());
 
@@ -63,8 +47,6 @@ fn parse_roman_numeral(s: &str) -> Result<i64, RomanNumeralError> {
 }
 
 fn main() {
-    println!("{}", fast_sum(&[1; 1000000]));
-
     let mut buf = String::new();
     let _ = std::io::stdin().read_line(&mut buf);
     println!("{:?}", parse_roman_numeral(buf.trim()));
