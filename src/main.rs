@@ -49,9 +49,9 @@ fn greatest_str_leq_than_n(v: i64) -> (&'static str, i64) {
         50.. => ("L", 50),
         40.. => ("XL", 40),
         10.. => ("X", 10),
-        9.. => ("IX", 10),
+        9.. => ("IX", 9),
         5.. => ("V", 5),
-        4.. => ("IV", 5),
+        4.. => ("IV", 4),
         1.. => ("I", 1),
         _ => ("", 0),
     }
@@ -70,6 +70,19 @@ impl RomanNumeral {
 
     fn to_int(&self) -> i64 {
         self.value
+    }
+
+    fn to_string(&self) -> String {
+        let mut result = String::with_capacity(self.value as usize / 500 + 1);
+        let mut val = self.value;
+
+        while val > 0 {
+            let (s, v) = greatest_str_leq_than_n(val);
+            val -= v;
+            result.push_str(s);
+        }
+
+        result
     }
 }
 
@@ -95,18 +108,9 @@ impl FromStr for RomanNumeral {
     }
 }
 
-impl ToString for RomanNumeral {
-    fn to_string(&self) -> String {
-        let mut result = String::with_capacity(self.value as usize / 500 + 1);
-        let mut val = self.value;
-
-        while val > 0 {
-            let (s, v) = greatest_str_leq_than_n(val);
-            val -= v;
-            result.push_str(s);
-        }
-
-        result
+impl Display for RomanNumeral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 
@@ -165,13 +169,13 @@ mod tests {
     fn invalid_characters() {
         for chr in "abefghjknopqrstuwyz".chars() {
             let r = RomanNumeral::from_str(&format!("{chr}"));
-            if let Ok(_) = r {
+            if r.is_ok() {
                 panic!("expecting only invalid characters, got valid character {chr:?}");
             }
         }
         for chr in ":.,;?! \t\n\r".chars() {
             let r = RomanNumeral::from_str(&format!("{chr}"));
-            if let Ok(_) = r {
+            if r.is_ok() {
                 panic!("expecting only invalid characters, got valid character {chr:?}");
             }
         }
@@ -193,9 +197,7 @@ mod tests {
             let string = RomanNumeral::with_value(i).to_string();
             assert_eq!(
                 i,
-                RomanNumeral::from_str(&string)
-                    .unwrap()
-                    .to_int(),
+                RomanNumeral::from_str(&string).unwrap().to_int(),
                 "result of to_string(): {:?}",
                 string,
             );
