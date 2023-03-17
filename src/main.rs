@@ -109,6 +109,7 @@ impl ToString for RomanNumeral {
         result
     }
 }
+
 fn getline() -> String {
     let mut buf = String::new();
     let _ = std::io::stdin().read_line(&mut buf);
@@ -131,6 +132,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use core::panic;
     use std::str::FromStr;
 
     use crate::RomanNumeral;
@@ -162,33 +164,40 @@ mod tests {
     #[test]
     fn invalid_characters() {
         for chr in "abefghjknopqrstuwyz".chars() {
-            let _ = RomanNumeral::from_str(&format!("{chr}"))
-                .expect_err(format!("invalid character '{chr}'").as_str());
+            let r = RomanNumeral::from_str(&format!("{chr}"));
+            if let Ok(_) = r {
+                panic!("expecting only invalid characters, got valid character {chr:?}");
+            }
         }
         for chr in ":.,;?! \t\n\r".chars() {
-            let _ = RomanNumeral::from_str(&format!("{chr}"))
-                .expect_err(format!("invalid character '{chr}'").as_str());
+            let r = RomanNumeral::from_str(&format!("{chr}"));
+            if let Ok(_) = r {
+                panic!("expecting only invalid characters, got valid character {chr:?}");
+            }
         }
     }
 
     #[test]
     fn valid_characters() {
         for chr in "cdilmvx".chars() {
-            let _ = RomanNumeral::from_str(&format!("{chr}"))
-                .unwrap_or_else(|err| panic!("valid character `{chr}` (error: {err:?})"));
+            let r = RomanNumeral::from_str(&format!("{chr}"));
+            if let Err(err) = r {
+                panic!("{err:?}");
+            }
         }
     }
 
     #[test]
     fn convert_back_and_forth() {
         for i in 1..10_000 {
+            let string = RomanNumeral::with_value(i).to_string();
             assert_eq!(
                 i,
-                RomanNumeral::from_str(&RomanNumeral::with_value(i).to_string())
+                RomanNumeral::from_str(&string)
                     .unwrap()
                     .to_int(),
-                "result of to_string(): `{}`",
-                RomanNumeral::with_value(i).to_string(),
+                "result of to_string(): {:?}",
+                string,
             );
         }
     }
