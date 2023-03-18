@@ -1,9 +1,10 @@
-use std::{fmt::Display, str::FromStr};
+use std::{fmt::Display, io::Write, str::FromStr};
 
 use itertools::Itertools;
 
 #[derive(Debug)]
 pub enum RomanNumeralError {
+    NonPositiveNumeral,
     InvalidChar(char),
     MiscError(String),
 }
@@ -72,7 +73,10 @@ impl RomanNumeral {
         self.value
     }
 
-    fn to_string(&self) -> String {
+    fn to_roman_numeral_string(&self) -> Result<String, RomanNumeralError> {
+        if self.value < 1 {
+            return Err(RomanNumeralError::NonPositiveNumeral);
+        }
         let mut result = String::with_capacity(self.value as usize / 500 + 1);
         let mut val = self.value;
 
@@ -82,7 +86,7 @@ impl RomanNumeral {
             result.push_str(s);
         }
 
-        result
+        Ok(result)
     }
 }
 
@@ -110,7 +114,7 @@ impl FromStr for RomanNumeral {
 
 impl Display for RomanNumeral {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
+        write!(f, "{:?}", self)
     }
 }
 
@@ -122,14 +126,24 @@ fn getline() -> String {
 
 fn main() {
     loop {
+        print!("input: ");
+        if std::io::stdout().flush().is_err() {
+            panic!("failed to flush stdout");
+        }
         let inp_str = getline();
         let r = RomanNumeral::from_str(inp_str.trim());
-        println!("input: {:?}", inp_str.trim());
-        if let Ok(i) = r {
-            println!("value: {:?}", i.to_int());
-            println!("converted back: {:?}", i.to_string());
+        if let Ok(r) = r {
+            println!("value: {:?}", r.to_int());
+            println!("converted back: {}", r.to_roman_numeral_string().unwrap());
+        } else if let Ok(int_val) = inp_str.trim().parse() {
+            let r = RomanNumeral::with_value(int_val).to_roman_numeral_string();
+            if let Ok(string) = r {
+                println!("numeral: {string}",);
+            } else {
+                println!("error: {:?}", r.unwrap_err());
+            }
         } else {
-            println!("error: {:?}", r.err().unwrap());
+            println!("error: {:?}", r.unwrap_err());
         }
     }
 }
@@ -194,7 +208,7 @@ mod tests {
     #[test]
     fn convert_back_and_forth() {
         for i in 1..10_000 {
-            let string = RomanNumeral::with_value(i).to_string();
+            let string = RomanNumeral::with_value(i).to_roman_numeral_string();
             assert_eq!(
                 i,
                 RomanNumeral::from_str(&string).unwrap().to_int(),
