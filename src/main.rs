@@ -208,7 +208,9 @@ mod tests {
     #[test]
     fn convert_back_and_forth() {
         for i in 1..10_000 {
-            let string = RomanNumeral::with_value(i).to_roman_numeral_string();
+            let string = RomanNumeral::with_value(i)
+                .to_roman_numeral_string()
+                .unwrap();
             assert_eq!(
                 i,
                 RomanNumeral::from_str(&string).unwrap().to_int(),
